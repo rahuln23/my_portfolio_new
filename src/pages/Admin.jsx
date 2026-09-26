@@ -14,6 +14,23 @@ import { uploadFile } from "../firebase/storage";
 
 import "../styles/admin.css";
 import { calculateExperience } from "./experience";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
 
 const emptyProject = {
   title: "",
@@ -36,6 +53,7 @@ const emptyExperience = {
   startDate: "",
   endDate: "",
   description: "",
+  order: 0,
 };
 
 export default function Admin({ user }) {
@@ -53,6 +71,7 @@ export default function Admin({ user }) {
   const [experienceForm, setExperienceForm] =
     useState(emptyExperience);
 
+
   const [editingSkill, setEditingSkill] = useState(null);
   const [editingProject, setEditingProject] = useState(null);
   const [editingExperience, setEditingExperience] =
@@ -65,23 +84,66 @@ export default function Admin({ user }) {
 const [resumeSource, setResumeSource] =
   useState("file");
 
+  
+
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
+  const experienceSensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 8,
+    },
+  }),
 
-      const result = await getPortfolioData();
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 150,
+      tolerance: 5,
+    },
+  })
+);
 
-      setData(result || {});
-    } catch (error) {
-      console.error("Admin data error:", error);
-    } finally {
-      setLoading(false);
+const loadData = async () => {
+  try {
+    setLoading(true);
+
+    const result = await getPortfolioData();
+
+    if (!result) {
+      setData({});
+      return;
     }
-  };
+
+    // Add order to old experience records
+    const experienceData = result.experience || {};
+
+    const normalizedExperience = Object.fromEntries(
+      Object.entries(experienceData).map(
+        ([id, item], index) => [
+          id,
+          {
+            ...item,
+            order:
+              typeof item.order === "number"
+                ? item.order
+                : index,
+          },
+        ]
+      )
+    );
+
+    setData({
+      ...result,
+      experience: normalizedExperience,
+    });
+  } catch (error) {
+    console.error("Admin data error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const updateLocalSection = (section, value) => {
     setData((previous) => ({
@@ -400,10 +462,76 @@ const getDriveImageUrl = (url) => {
   // EXPERIENCE
   // --------------------------------
 
-  const experiences = useMemo(
-    () => Object.entries(data.experience || {}),
-    [data.experience]
+const experiences = useMemo(() => {
+  return Object.entries(data.experience || {}).sort(
+    ([, first], [, second]) =>
+      Number(first.order ?? 999999) -
+      Number(second.order ?? 999999)
   );
+}, [data.experience]);
+
+const handleExperienceDragEnd = async ({ active, over }) => {
+  if (!over || active.id === over.id) return;
+
+  const oldIndex = experiences.findIndex(
+    ([id]) => id === active.id
+  );
+
+  const newIndex = experiences.findIndex(
+    ([id]) => id === over.id
+  );
+
+  if (oldIndex === -1 || newIndex === -1) return;
+
+  const reordered = arrayMove(
+    experiences,
+    oldIndex,
+    newIndex
+  );
+
+  // Update local UI immediately
+  const reorderedExperience = Object.fromEntries(
+    reordered.map(([id, experience], index) => [
+      id,
+      {
+        ...experience,
+        order: index,
+      },
+    ])
+  );
+
+  updateLocalSection(
+    "experience",
+    reorderedExperience
+  );
+
+  // Save new order to Firebase
+  try {
+    setSaving(true);
+
+    await Promise.all(
+      reordered.map(([id], index) =>
+        updateItem("experience", id, {
+          order: index,
+        })
+      )
+    );
+
+    showToast("Experience order updated.");
+  } catch (error) {
+    console.error("Failed to save experience order:", error);
+
+    // Reload Firebase data if save failed
+    await loadData();
+
+    showToast(
+      "Failed to save experience order.",
+      "error"
+    );
+  } finally {
+    setSaving(false);
+  }
+};
 
   const resetExperience = () => {
     setExperienceForm(emptyExperience);
@@ -411,56 +539,75 @@ const getDriveImageUrl = (url) => {
   };
 
   const handleExperienceSubmit = async (event) => {
-    event.preventDefault();
+  event.preventDefault();
 
-    if (!experienceForm.company.trim()) {
-      showToast("Company is required.", "error");
-      return;
-    }
+  if (!experienceForm.company.trim()) {
+    showToast("Company is required.", "error");
+    return;
+  }
 
-    try {
-      setSaving(true);
+  try {
+    setSaving(true);
 
-      if (editingExperience) {
-        await updateItem(
-          "experience",
-          editingExperience,
-          experienceForm
-        );
-      } else {
-        await addItem(
-          "experience",
-          experienceForm
-        );
-      }
+    if (editingExperience) {
+      const currentExperience =
+        data.experience?.[editingExperience];
 
-      await loadData();
-      resetExperience();
+      const payload = {
+        ...experienceForm,
+        order:
+          currentExperience?.order ??
+          experiences.length - 1,
+      };
 
-      showToast(
-        editingExperience
-          ? "Experience updated successfully."
-          : "Experience added successfully."
+      await updateItem(
+        "experience",
+        editingExperience,
+        payload
       );
-    } catch (error) {
-      console.error(error);
-      showToast("Failed to save experience.", "error");
-    } finally {
-      setSaving(false);
+    } else {
+      const payload = {
+        ...experienceForm,
+        order: experiences.length,
+      };
+
+      await addItem(
+        "experience",
+        payload
+      );
     }
-  };
+
+    await loadData();
+    resetExperience();
+
+    showToast(
+      editingExperience
+        ? "Experience updated successfully."
+        : "Experience added successfully."
+    );
+  } catch (error) {
+    console.error(error);
+    showToast(
+      "Failed to save experience.",
+      "error"
+    );
+  } finally {
+    setSaving(false);
+  }
+};
 
   const editExperience = (id, item) => {
-    setEditingExperience(id);
+  setEditingExperience(id);
 
-    setExperienceForm({
-      company: item.company || "",
-      position: item.position || "",
-      startDate: item.startDate || "",
-      endDate: item.endDate || "",
-      description: item.description || "",
-    });
-  };
+  setExperienceForm({
+    company: item.company || "",
+    position: item.position || "",
+    startDate: item.startDate || "",
+    endDate: item.endDate || "",
+    description: item.description || "",
+    order: item.order ?? 0,
+  });
+};
 
   const removeExperience = async (id) => {
     if (!window.confirm("Delete this experience?")) return;
@@ -1634,85 +1781,33 @@ const getDriveImageUrl = (url) => {
                   text="Add your first position using the form above."
                 />
               ) : (
-                <div className="admin-timeline">
+               <DndContext
+  sensors={experienceSensors}
+  collisionDetection={closestCenter}
+  onDragEnd={handleExperienceDragEnd}
+>
+  <SortableContext
+    items={experiences.map(([id]) => id)}
+    strategy={verticalListSortingStrategy}
+  >
+    <div className="admin-timeline">
 
-                  {experiences.map(
-                    ([id, experience]) => (
-                      <div
-                        className="admin-timeline-item"
-                        key={id}
-                      >
-                        <div className="admin-timeline-dot" />
+      {experiences.map(
+        ([id, experience], index) => (
+          <SortableExperience
+            key={id}
+            id={id}
+            experience={experience}
+            index={index}
+            onEdit={editExperience}
+            onDelete={removeExperience}
+          />
+        )
+      )}
 
-                        <div className="admin-experience-card">
-
-                          <div className="admin-experience-top">
-
-                            <div>
-                              <span className="admin-card-category">
-                                {
-                                  experience.company
-                                }
-                              </span>
-
-                              <h3>
-                                {
-                                  experience.position
-                                }
-                              </h3>
-                            </div>
-
-                            <span className="admin-date">
-                              {
-                                experience.startDate
-                              }{" "}
-                              —{" "}
-                              {
-                                experience.endDate ||
-                                  "Present"
-                              }
-                            </span>
-
-                          </div>
-
-                          {experience.description && (
-                            <p>
-                              {
-                                experience.description
-                              }
-                            </p>
-                          )}
-
-                          <div className="admin-card-actions">
-                            <button
-                              onClick={() =>
-                                editExperience(
-                                  id,
-                                  experience
-                                )
-                              }
-                            >
-                              Edit
-                            </button>
-
-                            <button
-                              className="danger"
-                              onClick={() =>
-                                removeExperience(
-                                  id
-                                )
-                              }
-                            >
-                              Delete
-                            </button>
-                          </div>
-
-                        </div>
-                      </div>
-                    )
-                  )}
-
-                </div>
+    </div>
+  </SortableContext>
+</DndContext>
               )}
             </AdminCard>
           </section>
@@ -2101,6 +2196,110 @@ function AdminInput({
         }
       />
     </label>
+  );
+}
+
+function SortableExperience({
+  id,
+  experience,
+  index,
+  onEdit,
+  onDelete,
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`admin-timeline-item ${
+        isDragging
+          ? "admin-experience-dragging"
+          : ""
+      }`}
+    >
+      <div className="admin-timeline-dot" />
+
+      <div className="admin-experience-card">
+
+        {/* Drag handle */}
+        <button
+          type="button"
+          className="experience-drag-handle"
+          {...attributes}
+          {...listeners}
+          title="Drag to reorder"
+        >
+          ⋮⋮
+        </button>
+
+        <div className="admin-experience-content">
+
+          <div className="admin-experience-top">
+
+            <div>
+              <span className="admin-card-category">
+                {experience.company}
+              </span>
+
+              <h3>
+                {experience.position}
+              </h3>
+            </div>
+
+            <span className="admin-date">
+              {experience.startDate} —{" "}
+              {experience.endDate || "Present"}
+            </span>
+
+          </div>
+
+          {experience.description && (
+            <p>
+              {experience.description}
+            </p>
+          )}
+
+          <div className="admin-card-actions">
+
+            <button
+              type="button"
+              onClick={() =>
+                onEdit(id, experience)
+              }
+            >
+              Edit
+            </button>
+
+            <button
+              type="button"
+              className="danger"
+              onClick={() =>
+                onDelete(id)
+              }
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -1,5 +1,9 @@
 export default function Experience({ experience = {} }) {
-  const list = Object.entries(experience);
+const list = Object.entries(experience).sort(
+  ([, first], [, second]) =>
+    Number(first.order ?? 999999) -
+    Number(second.order ?? 999999)
+);
 
   return (
     <section id="experience" className="section">
@@ -10,58 +14,38 @@ export default function Experience({ experience = {} }) {
           Where I've worked.
         </h2>
 
-        <div style={{ marginTop: 55 }}>
-          {list.map(([id, item], index) => (
-            <div
-              key={id}
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "150px 1fr",
-                gap: 30,
-                padding: "28px 0",
-                borderTop: "1px solid var(--border)",
-              }}
-            >
+        <div className="experience-list">
+          {list.length === 0 ? (
+            <div className="experience-empty">
+              No experience added yet.
+            </div>
+          ) : (
+            list.map(([id, item]) => (
               <div
-                style={{
-                  color: "var(--muted)",
-                  fontSize: 10,
-                }}
+                key={id}
+                className="experience-item"
               >
-                {item.startDate} —{" "}
-                {item.endDate || "Present"}
-              </div>
-
-              <div>
-                <h3 style={{ fontSize: 20 }}>
-                  {item.position}
-                </h3>
-
-                <div
-                  style={{
-                    color: "var(--purple)",
-                    marginTop: 5,
-                    fontSize: 11,
-                  }}
-                >
-                  {item.company}
+                {/* Date */}
+                <div className="experience-date">
+                  {item.startDate} —{" \n"}
+                  {item.endDate || "Present"}
                 </div>
 
-                <p
-                  style={{
-                    marginTop: 15,
-                    color: "var(--muted)",
-                    fontSize: 12,
-                    lineHeight: 1.8,
-                    maxWidth: 700,
-                  }}
-                >
-                  {item.description}
-                </p>
+                {/* Details */}
+                <div className="experience-details">
+                  <h3>{item.position}</h3>
+
+                  <div className="experience-company">
+                    {item.company}
+                  </div>
+
+                  {item.description && (
+                    <p>{item.description}</p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </section>

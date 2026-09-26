@@ -10,63 +10,64 @@ export default function Skills({ skills = {} }) {
           Tools of the trade.
         </h2>
 
+      <div
+  style={{
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 40,
+  }}
+>
+  {list.map((skill, index) => (
+    <div
+      key={skill.id || index}
+      className="glass"
+      style={{
+        padding: "14px 18px",
+        borderRadius: 14,
+        width: "fit-content",
+        minWidth: 100,
+        maxWidth: 260,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 14,
+          fontWeight: 700,
+        }}
+      >
+        {skill.name}
+      </div>
+
+      {skill.category && (
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: 12,
-            marginTop: 50,
+            marginTop: 6,
+            color: "var(--purple)",
+            fontSize: 9,
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
           }}
         >
-          {list.map((skill, index) => (
-            <div
-              key={skill.id || index}
-              className="glass"
-              style={{
-                padding: 24,
-                borderRadius: 18,
-                minHeight: 130,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                }}
-              >
-                {skill.name}
-              </div>
-
-              {skill.category && (
-                <div
-                  style={{
-                    marginTop: 10,
-                    color: "var(--purple)",
-                    fontSize: 10,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.1em",
-                  }}
-                >
-                  {skill.category}
-                </div>
-              )}
-
-              {skill.description && (
-                <p
-                  style={{
-                    marginTop: 14,
-                    color: "var(--muted)",
-                    fontSize: 11,
-                    lineHeight: 1.7,
-                  }}
-                >
-                  {skill.description}
-                </p>
-              )}
-            </div>
-          ))}
+          {skill.category}
         </div>
+      )}
+
+      {skill.description && (
+        <p
+          style={{
+            marginTop: 8,
+            color: "var(--muted)",
+            fontSize: 10,
+            lineHeight: 1.5,
+          }}
+        >
+          {skill.description}
+        </p>
+      )}
+    </div>
+  ))}
+</div>
       </div>
     </section>
   );
