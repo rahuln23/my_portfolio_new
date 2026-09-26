@@ -1,0 +1,225 @@
+.space-background {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+  pointer-events: none;
+
+  background: #000;
+
+  z-index: 0;
+
+  /* GPU layer */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* =========================
+   STARS
+========================= */
+
+.space-stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  display: block;
+
+  border-radius: 50%;
+
+  background: #fff;
+
+  box-shadow:
+    0 0 3px rgba(255, 255, 255, 0.7),
+    0 0 7px rgba(214, 181, 248, 0.35);
+
+  animation:
+    star-twinkle
+    var(--star-duration)
+    ease-in-out
+    var(--star-delay)
+    infinite alternate;
+
+  will-change: transform, opacity;
+}
+
+@keyframes star-twinkle {
+  0% {
+    transform: scale(0.7);
+  }
+
+  100% {
+    transform: scale(1.15);
+  }
+}
+
+
+/* =========================
+   METEOR
+========================= */
+
+/* =========================
+   METEOR
+========================= */
+
+.meteor {
+  position: absolute;
+
+  width: var(--meteor-size);
+  height: 2px;
+
+  border-radius: 999px;
+
+  transform-origin: right center;
+
+  opacity: 0;
+
+  /*
+    ONE SINGLE TAIL
+  */
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(214, 181, 248, 0.03) 20%,
+    rgba(214, 181, 248, 0.12) 45%,
+    rgba(255, 255, 255, 0.35) 70%,
+    rgba(255, 255, 255, 0.75) 90%,
+    #ffffff 100%
+  );
+
+  animation:
+    meteor-fall
+    var(--meteor-duration)
+    linear
+    var(--meteor-delay)
+    infinite;
+
+  will-change: transform, opacity;
+}
+
+
+/* =========================
+   ONLY METEOR HEAD
+========================= */
+
+.meteor::after {
+  content: "";
+
+  position: absolute;
+
+  right: -3px;
+  top: 50%;
+
+  width: 6px;
+  height: 6px;
+
+  transform: translateY(-50%);
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  /*
+    Glow ONLY on the head
+  */
+  box-shadow:
+    0 0 4px #ffffff,
+    0 0 10px #ffffff,
+    0 0 18px rgba(214, 181, 248, 0.9);
+}
+
+
+/* =========================
+   METEOR HEAD
+========================= */
+
+.meteor::after {
+  content: "";
+
+  position: absolute;
+
+  right: -2px;
+  top: 50%;
+
+  width: 6px;
+  height: 6px;
+
+  transform: translateY(-50%);
+
+  border-radius: 50%;
+
+  background: #fff;
+
+  box-shadow:
+    0 0 4px #fff,
+    0 0 9px #fff,
+    0 0 18px rgba(214, 181, 248, 0.95),
+    0 0 28px rgba(214, 181, 248, 0.45);
+}
+
+
+/* =========================
+   INNER TAIL
+========================= */
+
+
+
+
+/* =========================
+   METEOR ANIMATION
+========================= */
+
+@keyframes meteor-fall {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      translate3d(-100px, -100px, 0)
+      rotate(45deg);
+  }
+
+  5% {
+    opacity: 1;
+  }
+
+  65% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate3d(900px, 900px, 0)
+      rotate(45deg);
+  }
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 768px) {
+
+  .meteor {
+    height: 1.5px;
+  }
+
+  .meteor::after {
+    width: 5px;
+    height: 5px;
+  }
+}

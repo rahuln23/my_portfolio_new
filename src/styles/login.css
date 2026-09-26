@@ -1,0 +1,277 @@
+.login-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  background: #000;
+  color: #fff;
+
+  display: grid;
+  place-items: center;
+
+  padding: 24px;
+
+  position: relative;
+  z-index: 1;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+
+  padding: 35px;
+
+  border-radius: 24px;
+
+  overflow: hidden;
+}
+
+.login-label {
+  color: var(--purple);
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 0.2em;
+  line-height: 1.4;
+}
+
+.login-title {
+  margin-top: 15px;
+
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 700;
+
+  letter-spacing: -0.04em;
+}
+
+.login-description {
+  color: var(--muted);
+
+  font-size: 11px;
+  line-height: 1.6;
+
+  margin-top: 10px;
+}
+
+.login-fields {
+  width: 100%;
+}
+
+.login-input {
+  width: 100%;
+
+  margin-top: 15px;
+
+  padding: 14px 16px;
+
+  background: #050505;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+
+  color: #fff;
+
+  outline: none;
+
+  font-family: var(--font-doto);
+  font-size: 11px;
+
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.login-input::placeholder {
+  color: #666;
+}
+
+.login-input:focus {
+  border-color: rgba(214, 181, 248, 0.65);
+
+  box-shadow:
+    0 0 0 3px rgba(214, 181, 248, 0.08),
+    0 0 20px rgba(214, 181, 248, 0.08);
+}
+
+.recaptcha-wrapper {
+  width: 100%;
+
+  margin-top: 20px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  overflow: hidden;
+}
+
+/*
+  reCAPTCHA itself is around 304px wide.
+  Keep it centered on small screens.
+*/
+.recaptcha-wrapper > div {
+  max-width: 100%;
+}
+
+.login-error {
+  color: var(--red);
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  margin-top: 15px;
+
+  text-align: center;
+}
+
+.login-button {
+  width: 100%;
+
+  margin-top: 20px;
+
+  padding: 14px;
+
+  border-radius: 999px;
+
+  background: #fff;
+  color: #000;
+
+  font-family: var(--font-doto);
+
+  font-weight: 800;
+  font-size: 10px;
+
+  letter-spacing: 0.05em;
+
+  cursor: pointer;
+
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+.login-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.login-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.login-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 768px) {
+  .login-page {
+    padding: 20px;
+  }
+
+  .login-card {
+    max-width: 400px;
+
+    padding: 30px;
+
+    border-radius: 20px;
+  }
+
+  .login-title {
+    font-size: 32px;
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 16px;
+  }
+
+  .login-card {
+    width: 100%;
+
+    padding: 24px 20px;
+
+    border-radius: 18px;
+  }
+
+  .login-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+
+  .login-title {
+    margin-top: 12px;
+
+    font-size: 28px;
+  }
+
+  .login-description {
+    font-size: 10px;
+
+    margin-top: 8px;
+  }
+
+  .login-input {
+    margin-top: 12px;
+
+    padding: 13px 14px;
+
+    font-size: 11px;
+  }
+
+  .recaptcha-wrapper {
+    margin-top: 18px;
+
+    /*
+      Prevent horizontal overflow on narrow phones.
+    */
+    justify-content: center;
+  }
+
+  .login-button {
+    margin-top: 18px;
+
+    padding: 14px;
+  }
+}
+
+/* =========================
+   VERY SMALL PHONES
+========================= */
+
+@media (max-width: 350px) {
+  .login-page {
+    padding: 10px;
+  }
+
+  .login-card {
+    padding: 20px 14px;
+  }
+
+  .login-title {
+    font-size: 25px;
+  }
+
+  .login-description {
+    font-size: 9px;
+  }
+
+  /*
+    Scale the reCAPTCHA slightly on very narrow devices.
+  */
+  .recaptcha-wrapper {
+    transform: scale(0.88);
+    transform-origin: center;
+    width: 113.6%;
+    margin-left: -6.8%;
+  }
+}

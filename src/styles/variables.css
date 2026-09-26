@@ -1,0 +1,28 @@
+:root {
+  --bg: #000000;
+  --bg-soft: #050505;
+  --surface: #0a0a0a;
+  --surface-2: #101010;
+
+  --white: #ffffff;
+  --text: #f5f5f5;
+  --muted: #8a8a8a;
+
+  --purple: #d6b5f8;
+  --purple-soft: rgba(214, 181, 248, 0.16);
+
+  --cyan: #00f0ff;
+  --green: #72f5a3;
+  --red: #ff5f5f;
+
+  --border: rgba(255, 255, 255, 0.12);
+  --border-light: rgba(255, 255, 255, 0.2);
+
+  --container: 1280px;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+
+  --transition: 220ms ease;
+}

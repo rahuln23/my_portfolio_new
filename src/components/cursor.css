@@ -1,0 +1,60 @@
+@media (pointer: fine) {
+  body {
+    cursor: none;
+  }
+
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    cursor: none;
+  }
+
+  .cursor-dot,
+  .cursor-trail {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    pointer-events: none;
+    z-index: 99999;
+
+    transform: translate3d(-100px, -100px, 0);
+  }
+
+  .cursor-dot {
+    width: 10px;
+    height: 10px;
+
+    margin-left: -5px;
+    margin-top: -5px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    box-shadow:
+      0 0 8px white,
+      0 0 20px var(--purple),
+      0 0 40px rgba(214, 181, 248, 0.5);
+  }
+
+  .cursor-trail {
+    width: var(--trail-size);
+    height: var(--trail-size);
+
+    margin-left: calc(var(--trail-size) / -2);
+    margin-top: calc(var(--trail-size) / -2);
+
+    border-radius: 50%;
+
+    opacity: var(--trail-opacity);
+
+    background: var(--purple);
+
+    box-shadow:
+      0 0 8px var(--purple),
+      0 0 15px rgba(214, 181, 248, 0.5);
+  }
+}
