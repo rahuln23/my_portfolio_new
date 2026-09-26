@@ -201,7 +201,9 @@ img {
     grid-column: auto;
     grid-row: auto;
   }
-
+.description {
+  white-space: pre-line;
+}
   .experience-details h3 {
     font-size: 18px;
   }
